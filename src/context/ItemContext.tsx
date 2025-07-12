@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import productsData from '../assets/products.json';
+import { saveLocalData, getLocalData } from '../utils/localOperations';
 
 export interface Item {
   id: number;
@@ -26,63 +27,107 @@ interface ItemContextType {
 const ItemContext = createContext<ItemContextType | undefined>(undefined);
 
 export const useItems = () => {
-  const context = useContext(ItemContext);
-  if (!context) {
+  const data = useContext(ItemContext);
+  if (!data) {
     throw new Error('useItems must be used within an ItemProvider');
   }
-  return context;
+  return data;
 };
 
 interface ItemProviderProps {
   children: ReactNode;
 }
 
-export const ItemProvider = ({ children }:ItemProviderProps) => {
+const STORAGE_KEY = 'inventory_items';
+
+export const ItemProvider = ({ children }: ItemProviderProps) => {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadItems = async () => {
-      try {
-        setLoading(true);
-        // await new Promise(resolve => setTimeout(resolve, 1000));
+  const loadItems = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const savedItems = await getLocalData(STORAGE_KEY);
+      
+      if (savedItems && Array.isArray(savedItems) && savedItems.length > 0) {
+        setItems(savedItems);
+      } else {
         setItems(productsData);
-        setError(null);
-      } catch (err) {
-        setError('Failed to load items');
-      } finally {
-        setLoading(false);
+        await saveLocalData(STORAGE_KEY, productsData);
       }
-    };
+    } catch (err) {
+      console.error('Error loading items:', err);
+      setError('Failed to load items');
+      setItems(productsData);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const saveItems = async (newItems: Item[]) => {
+    try {
+      await saveLocalData(STORAGE_KEY, newItems);
+    } catch (err) {
+      console.error('Error saving items:', err);
+      setError('Failed to save items');
+    }
+  };
+
+  useEffect(() => {
     loadItems();
   }, []);
 
-  const addItem = (newItem: Omit<Item, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const now = new Date().toISOString();
-    const id = Math.max(...items.map(item => item.id), 0) + 1;
-    const item: Item = {
-      ...newItem,
-      id,
-      createdAt: now,
-      updatedAt: now,
-    };
-    setItems(prev => [...prev, item]);
+  const addItem = async (newItem: Omit<Item, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const now = new Date().toISOString();
+      const id = Math.max(...items.map(item => item.id), 0) + 1;
+      const item: Item = {
+        ...newItem,
+        id,
+        createdAt: now,
+        updatedAt: now,
+      };
+      
+      const updatedItems = [...items, item];
+      setItems(updatedItems);
+      await saveItems(updatedItems);
+      setError(null);
+    } catch (err) {
+      console.error('Error adding item:', err);
+      setError('Failed to add item');
+    }
   };
 
-  const updateItem = (id: number, updatedItem: Omit<Item, 'id' | 'createdAt' | 'updatedAt'>) => {
-    setItems(prev => 
-      prev.map(item => 
+  const updateItem = async (id: number, updatedItem: Omit<Item, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const updatedItems = items.map(item => 
         item.id === id 
           ? { ...item, ...updatedItem, updatedAt: new Date().toISOString() }
           : item
-      )
-    );
+      );
+      
+      setItems(updatedItems);
+      await saveItems(updatedItems);
+      setError(null);
+    } catch (err) {
+      console.error('Error updating item:', err);
+      setError('Failed to update item');
+    }
   };
 
-  const deleteItem = (id: number) => {
-    setItems(prev => prev.filter(item => item.id !== id));
+  const deleteItem = async (id: number) => {
+    try {
+      const updatedItems = items.filter(item => item.id !== id);
+      setItems(updatedItems);
+      await saveItems(updatedItems);
+      setError(null);
+    } catch (err) {
+      console.error('Error deleting item:', err);
+      setError('Failed to delete item');
+    }
   };
 
   const getItemById = (id: number) => {

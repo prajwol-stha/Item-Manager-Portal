@@ -10,11 +10,11 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../App';
 import { useItems } from '../context/ItemContext';
 import { globalStyles, COLORS, FONTSIZES } from '../styles/globalStyles';
 import CustomButton from '../components/CustomButton';
 import CustomInput from '../components/CustomInput';
+import { RootStackParamList } from '../navigation/navigation';
 
 type ItemFormScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ItemForm'>;
 type ItemFormScreenRouteProp = RouteProp<RootStackParamList, 'ItemForm'>;
@@ -308,6 +308,7 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     marginTop: 8,
+    paddingVertical:12
   },
   disabledButton: {
     opacity: 0.6,

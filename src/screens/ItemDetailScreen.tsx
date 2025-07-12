@@ -6,13 +6,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Linking,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../App';
 import { useItems } from '../context/ItemContext';
 import { globalStyles, COLORS, FONTSIZES } from '../styles/globalStyles';
 import CustomButton from '../components/CustomButton';
+import { RootStackParamList } from '../navigation/navigation';
 
 type ItemDetailScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ItemDetail'>;
 type ItemDetailScreenRouteProp = RouteProp<RootStackParamList, 'ItemDetail'>;
@@ -43,6 +44,21 @@ const ItemDetailScreen: React.FC = () => {
         },
       ]
     );
+  };
+
+  const handleImageUrlPress = async () => {
+    if (!item?.imageUrl) return;
+    
+    try {
+      const supported = await Linking.canOpenURL(item.imageUrl);
+      if (supported) {
+        await Linking.openURL(item.imageUrl);
+      } else {
+        Alert.alert('Error', 'Unable to open the image URL');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open the image URL');
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -111,9 +127,14 @@ const ItemDetailScreen: React.FC = () => {
 
           <View style={styles.detailRow}>
             <Text style={styles.label}>Image URL:</Text>
-            <Text style={[styles.value, styles.urlText]} numberOfLines={2}>
-              {item.imageUrl}
-            </Text>
+            <TouchableOpacity 
+              onPress={handleImageUrlPress}
+              style={styles.urlContainer}
+            >
+              <Text style={[styles.value, styles.urlText]} numberOfLines={2}>
+                {item.imageUrl}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -174,9 +195,14 @@ const styles = StyleSheet.create({
     flex: 2,
     textAlign: 'right',
   },
+  urlContainer: {
+    flex: 2,
+    alignItems: 'flex-end',
+  },
   urlText: {
     fontSize: FONTSIZES.SMALL,
     color: COLORS.BLUE,
+    textDecorationLine: 'underline',
   },
   section: {
     marginTop: 12,

@@ -10,10 +10,10 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../App';
 import { useItems, Item } from '../context/ItemContext';
 import { globalStyles, COLORS, FONTSIZES } from '../styles/globalStyles';
 import CustomButton from '../components/CustomButton';
+import { RootStackParamList } from '../navigation/navigation';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -105,7 +105,7 @@ const HomeScreen = () => {
         )}
       />
       <CustomButton
-        title="+ Add New Item"
+        title="Add New Item"
         onPress={() => navigation.navigate('ItemForm')}
         style={styles.addButton}
       />

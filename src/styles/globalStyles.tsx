@@ -77,7 +77,6 @@ export const globalStyles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
-    // marginVertical: 8,
   },
   input: {
     borderWidth: 1,

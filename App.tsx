@@ -7,12 +7,7 @@ import { COLORS } from './src/styles/globalStyles';
 import { ItemProvider } from './src/context/ItemContext';
 import ItemFormScreen from './src/screens/ItemFormScreen';
 import HomeScreen from './src/screens/Homescreen';
-
-export type RootStackParamList = {
-  Home: undefined;
-  ItemDetail: { itemId: number };
-  ItemForm: { itemId?: number };
-};
+import { RootStackParamList } from './src/navigation/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
